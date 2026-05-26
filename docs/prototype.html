@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Image Checker — Detect AI-Generated Images Instantly</title>
+<meta name="description" content="Free AI image detector with multi-engine comparison. Upload an image and get instant results with visual explanation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-deep:#0a0e1a;--bg-surface:#111827;--bg-card:#1a2236;--bg-elevated:#1f2b42;
+  --cyan:#00e5ff;--cyan-dim:#00b8d4;--cyan-glow:rgba(0,229,255,.15);
+  --amber:#ffab00;--amber-dim:#ff8f00;--amber-glow:rgba(255,171,0,.12);
+  --red:#ff5252;--red-glow:rgba(255,82,82,.15);
+  --green:#69f0ae;--green-glow:rgba(105,240,174,.12);
+  --text-primary:#e8edf5;--text-secondary:#8b97b0;--text-muted:#5a6680;
+  --border:#1e2a40;--border-light:#2a3a55;
+  --radius:12px;--radius-lg:20px;
+  --font-mono:'IBM Plex Mono','JetBrains Mono',monospace;
+  --font-sans:'DM Sans',system-ui,sans-serif;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:var(--font-sans);background:var(--bg-deep);color:var(--text-primary);line-height:1.6;overflow-x:hidden;min-height:100vh}
+
+/* ── Grain Overlay ── */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+  opacity:.4}
+
+/* ── Scanline Effect ── */
+@keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(100vh)}}
+.scanline-bar{position:fixed;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  opacity:.3;z-index:9998;animation:scanline 4s linear infinite;pointer-events:none}
+
+/* ── Container ── */
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+
+/* ── Nav ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px) saturate(1.4);
+  background:rgba(10,14,26,.82);border-bottom:1px solid var(--border)}
+nav .container{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-weight:700;font-size:1.1rem;color:var(--cyan);text-decoration:none;letter-spacing:-.5px}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),#0088a3);display:grid;place-items:center;position:relative;overflow:hidden}
+.logo-icon::after{content:'';position:absolute;inset:3px;border:1.5px solid rgba(255,255,255,.35);border-radius:5px}
+.logo-icon svg{width:18px;height:18px;fill:white}
+.nav-links{display:flex;gap:8px;align-items:center}
+.nav-links a{color:var(--text-secondary);text-decoration:none;font-size:.85rem;padding:6px 14px;border-radius:8px;transition:all .2s;font-weight:500}
+.nav-links a:hover{color:var(--text-primary);background:rgba(255,255,255,.05)}
+.nav-links a.active{color:var(--cyan);background:var(--cyan-glow)}
+.nav-cta{background:var(--cyan)!important;color:var(--bg-deep)!important;font-weight:600!important;padding:8px 20px!important}
+
+/* ── Hero ── */
+.hero{padding:140px 0 60px;text-align:center;position:relative}
+.hero::before{content:'';position:absolute;top:60px;left:50%;transform:translateX(-50%);width:600px;height:600px;
+  background:radial-gradient(circle,var(--cyan-glow) 0%,transparent 70%);pointer-events:none;opacity:.6}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--cyan-glow);border:1px solid rgba(0,229,255,.2);
+  color:var(--cyan);font-size:.78rem;font-weight:600;padding:6px 16px;border-radius:100px;margin-bottom:24px;
+  font-family:var(--font-mono);letter-spacing:.5px;text-transform:uppercase}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:dot-pulse 2s ease infinite}
+@keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+h1{font-family:var(--font-mono);font-size:clamp(2rem,5vw,3.2rem);font-weight:700;line-height:1.15;margin-bottom:20px;letter-spacing:-1.5px}
+h1 .highlight{background:linear-gradient(135deg,var(--cyan),#0088a3);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:1.1rem;color:var(--text-secondary);max-width:560px;margin:0 auto 40px;line-height:1.7}
+.hero-stats{display:flex;justify-content:center;gap:48px;margin-top:48px}
+.stat{text-align:center}
+.stat-num{font-family:var(--font-mono);font-size:1.6rem;font-weight:700;color:var(--cyan)}
+.stat-label{font-size:.78rem;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+
+/* ── Upload Zone ── */
+.upload-section{padding:20px 0 80px}
+.upload-zone{position:relative;border:2px dashed var(--border-light);border-radius:var(--radius-lg);padding:60px 40px;
+  text-align:center;cursor:pointer;transition:all .35s;background:var(--bg-surface);overflow:hidden}
+.upload-zone::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,var(--cyan-glow),transparent 70%);
+  opacity:0;transition:opacity .35s}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--cyan);background:rgba(0,229,255,.03)}
+.upload-zone:hover::before,.upload-zone.drag-over::before{opacity:1}
+.upload-zone.drag-over{transform:scale(1.01)}
+.upload-icon{width:72px;height:72px;margin:0 auto 20px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border-light);
+  display:grid;place-items:center;position:relative;z-index:1;transition:all .35s}
+.upload-zone:hover .upload-icon{border-color:var(--cyan);box-shadow:0 0 30px var(--cyan-glow)}
+.upload-icon svg{width:30px;height:30px;stroke:var(--cyan);fill:none;stroke-width:1.8}
+.upload-title{font-family:var(--font-mono);font-size:1.05rem;font-weight:600;margin-bottom:8px;position:relative;z-index:1}
+.upload-sub{font-size:.88rem;color:var(--text-secondary);position:relative;z-index:1;margin-bottom:20px}
+.upload-formats{display:flex;justify-content:center;gap:8px;position:relative;z-index:1}
+.upload-formats span{font-family:var(--font-mono);font-size:.7rem;padding:4px 10px;border-radius:6px;background:var(--bg-card);color:var(--text-muted);border:1px solid var(--border)}
+
+/* ── URL Input ── */
+.url-input-wrap{display:flex;align-items:center;gap:0;margin-top:24px;max-width:560px;margin-left:auto;margin-right:auto;position:relative;z-index:1}
+.url-input-wrap::before{content:'or paste URL';position:absolute;top:-24px;left:0;font-size:.75rem;color:var(--text-muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px}
+.url-input{flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-right:none;border-radius:var(--radius) 0 0 var(--radius);
+  padding:14px 18px;color:var(--text-primary);font-size:.9rem;font-family:var(--font-sans);outline:none;transition:border-color .2s}
+.url-input:focus{border-color:var(--cyan)}
+.url-input::placeholder{color:var(--text-muted)}
+.url-btn{padding:14px 24px;background:var(--cyan);color:var(--bg-deep);border:none;border-radius:0 var(--radius) var(--radius) 0;
+  font-family:var(--font-mono);font-weight:600;font-size:.85rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.url-btn:hover{background:var(--cyan-dim)}
+
+/* ── File Input (hidden) ── */
+#fileInput{display:none}
+
+/* ── Processing State ── */
+.processing{display:none;padding:80px 0;text-align:center}
+.processing.active{display:block}
+.processing-ring{width:120px;height:120px;margin:0 auto 32px;position:relative}
+.processing-ring svg{width:100%;height:100%;animation:spin 2s linear infinite}
+.processing-ring circle{fill:none;stroke-width:3;stroke-linecap:round}
+.processing-ring .track{stroke:var(--border)}
+.processing-ring .fill{stroke:var(--cyan);stroke-dasharray:280;stroke-dashoffset:200;animation:dash 1.5s ease-in-out infinite}
+@keyframes spin{100%{transform:rotate(360deg)}}
+@keyframes dash{0%{stroke-dashoffset:280}50%{stroke-dashoffset:100}100%{stroke-dashoffset:280}}
+.processing-label{font-family:var(--font-mono);font-size:.9rem;color:var(--cyan);margin-bottom:8px}
+.processing-sub{font-size:.85rem;color:var(--text-muted)}
+.engines-status{display:flex;justify-content:center;gap:24px;margin-top:32px;flex-wrap:wrap}
+.engine-pill{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:.78rem;padding:8px 16px;
+  border-radius:100px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);transition:all .4s}
+.engine-pill.done{border-color:var(--green);color:var(--green);background:var(--green-glow)}
+.engine-pill.active{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-glow);animation:pulse-border 1.5s ease infinite}
+@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 var(--cyan-glow)}50%{box-shadow:0 0 0 6px transparent}}
+.engine-pill .pill-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* ── Results ── */
+.results{display:none;padding:40px 0 100px}
+.results.active{display:block}
+
+.result-header{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:48px;align-items:start}
+.result-image-wrap{position:relative;border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);border:1px solid var(--border)}
+.result-image-wrap img{width:100%;display:block}
+.result-image-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(10,14,26,.8));pointer-events:none}
+
+/* Score Card */
+.score-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px;position:relative;overflow:hidden}
+.score-card::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,82,82,.08),transparent 70%);pointer-events:none}
+.score-verdict{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.verdict-icon{width:48px;height:48px;border-radius:50%;display:grid;place-items:center}
+.verdict-icon.ai{background:var(--red-glow);border:1px solid rgba(255,82,82,.3)}
+.verdict-icon.real{background:var(--green-glow);border:1px solid rgba(105,240,174,.3)}
+.verdict-icon.uncertain{background:var(--amber-glow);border:1px solid rgba(255,171,0,.3)}
+.verdict-icon svg{width:24px;height:24px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.verdict-icon.ai svg{stroke:var(--red)}
+.verdict-icon.real svg{stroke:var(--green)}
+.verdict-icon.uncertain svg{stroke:var(--amber)}
+.verdict-text h3{font-family:var(--font-mono);font-size:1.1rem;font-weight:700;margin-bottom:2px}
+.verdict-text p{font-size:.82rem;color:var(--text-secondary)}
+
+/* Score Gauge */
+.score-gauge{display:flex;align-items:center;gap:24px;margin-bottom:28px}
+.gauge-ring{position:relative;width:100px;height:100px;flex-shrink:0}
+.gauge-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.gauge-ring circle{fill:none;stroke-width:6;stroke-linecap:round}
+.gauge-ring .track{stroke:var(--border)}
+.gauge-ring .value{transition:stroke-dashoffset 1.5s cubic-bezier(.4,0,.2,1)}
+.gauge-ring .value.ai{stroke:var(--red)}
+.gauge-ring .value.real{stroke:var(--green)}
+.gauge-ring .value.uncertain{stroke:var(--amber)}
+.gauge-score{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-mono);font-size:1.6rem;font-weight:700}
+.gauge-meta{flex:1}
+.gauge-meta .label{font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.gauge-meta .desc{font-size:.88rem;color:var(--text-secondary);line-height:1.5}
+
+/* Engine Results */
+.engine-results{display:flex;flex-direction:column;gap:12px}
+.engine-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius);background:var(--bg-card);border:1px solid var(--border)}
+.engine-name{font-family:var(--font-mono);font-size:.82rem;font-weight:600;width:120px;flex-shrink:0}
+.engine-bar-wrap{flex:1;height:6px;background:var(--bg-deep);border-radius:3px;overflow:hidden}
+.engine-bar{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.engine-bar.ai{background:linear-gradient(90deg,var(--red),#ff8a80)}
+.engine-bar.real{background:linear-gradient(90deg,var(--green),#b9f6ca)}
+.engine-bar.uncertain{background:linear-gradient(90deg,var(--amber),#ffe082)}
+.engine-score{font-family:var(--font-mono);font-size:.85rem;font-weight:600;width:48px;text-align:right}
+.engine-score.ai{color:var(--red)}
+.engine-score.real{color:var(--green)}
+.engine-score.uncertain{color:var(--amber)}
+
+/* Heatmap Section */
+.heatmap-section{margin-top:48px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;position:relative;overflow:hidden}
+.section-label{font-family:var(--font-mono);font-size:.78rem;color:var(--cyan);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.section-label::before{content:'';width:8px;height:2px;background:var(--cyan)}
+.heatmap-container{position:relative;border-radius:var(--radius);overflow:hidden;background:var(--bg-card)}
+.heatmap-container img{width:100%;display:block;opacity:.5}
+.heatmap-overlay{position:absolute;inset:0;background:
+  radial-gradient(circle at 30% 40%,rgba(255,82,82,.45) 0%,transparent 25%),
+  radial-gradient(circle at 70% 60%,rgba(255,82,82,.35) 0%,transparent 20%),
+  radial-gradient(circle at 50% 30%,rgba(255,171,0,.25) 0%,transparent 30%),
+  radial-gradient(circle at 20% 70%,rgba(105,240,174,.2) 0%,transparent 25%),
+  radial-gradient(circle at 80% 30%,rgba(105,240,174,.2) 0%,transparent 20%);
+  mix-blend-mode:screen;pointer-events:none}
+.heatmap-legend{display:flex;gap:24px;margin-top:16px;justify-content:center}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--text-secondary)}
+.legend-dot{width:10px;height:10px;border-radius:3px}
+.legend-dot.ai{background:var(--red)}
+.legend-dot.uncertain{background:var(--amber)}
+.legend-dot.real{background:var(--green)}
+
+/* ── Features Section ── */
+.features{padding:80px 0;border-top:1px solid var(--border)}
+.features-header{text-align:center;margin-bottom:56px}
+.features-header h2{font-family:var(--font-mono);font-size:1.8rem;font-weight:700;letter-spacing:-1px;margin-bottom:12px}
+.features-header p{color:var(--text-secondary);max-width:480px;margin:0 auto}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.feature-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;transition:all .3s;position:relative;overflow:hidden}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;transition:opacity .3s}
+.feature-card:hover{border-color:var(--border-light);transform:translateY(-2px)}
+.feature-card:hover::before{opacity:1}
+.feature-icon{width:44px;height:44px;border-radius:10px;background:var(--cyan-glow);border:1px solid rgba(0,229,255,.15);
+  display:grid;place-items:center;margin-bottom:20px}
+.feature-icon svg{width:22px;height:22px;stroke:var(--cyan);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.feature-card h3{font-family:var(--font-mono);font-size:.95rem;font-weight:600;margin-bottom:8px}
+.feature-card p{font-size:.85rem;color:var(--text-secondary);line-height:1.6}
+
+/* ── Footer ── */
+footer{border-top:1px solid var(--border);padding:48px 0}
+.footer-inner{display:flex;justify-content:space-between;align-items:center}
+.footer-copy{font-size:.82rem;color:var(--text-muted)}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:.82rem;color:var(--text-secondary);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--cyan)}
+
+/* ── New Check Button ── */
+.new-check{display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--border-light);color:var(--text-secondary);
+  font-family:var(--font-mono);font-size:.82rem;padding:10px 20px;border-radius:var(--radius);cursor:pointer;transition:all .2s;margin-top:32px}
+.new-check:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-glow)}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .result-header{grid-template-columns:1fr;gap:24px}
+  .features-grid{grid-template-columns:1fr}
+  .hero-stats{gap:24px;flex-wrap:wrap}
+  .nav-links a:not(.nav-cta){display:none}
+  .engines-status{gap:12px}
+  .engine-pill{font-size:.7rem;padding:6px 12px}
+}
+</style>
+</head>
+<body>
+
+<div class="scanline-bar"></div>
+
+<!-- Nav -->
+<nav>
+  <div class="container">
+    <a href="#" class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      AI Image Checker
+    </a>
+    <div class="nav-links">
+      <a href="#" class="active">Detector</a>
+      <a href="#features">Features</a>
+      <a href="#">API</a>
+      <a href="#">Blog</a>
+      <a href="#" class="nav-cta">Try Free</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge"><span class="dot"></span> Multi-Engine Detection</div>
+    <h1>Is This Image<br><span class="highlight">AI-Generated?</span></h1>
+    <p class="hero-sub">Upload any image and get instant results from multiple AI detection engines, with visual explanation showing exactly which areas are suspected AI.</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">4</div><div class="stat-label">Detection Engines</div></div>
+      <div class="stat"><div class="stat-num">&lt;3s</div><div class="stat-label">Result Time</div></div>
+      <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Free to Use</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Upload -->
+<section class="upload-section" id="uploadSection">
+  <div class="container">
+    <div class="upload-zone" id="uploadZone">
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      </div>
+      <div class="upload-title">Drop your image here</div>
+      <div class="upload-sub">or click to browse files</div>
+      <div class="upload-formats">
+        <span>JPG</span><span>PNG</span><span>WebP</span><span>GIF</span>
+        <span style="color:var(--text-muted)">Max 20MB</span>
+      </div>
+      <div class="url-input-wrap">
+        <input type="text" class="url-input" id="urlInput" placeholder="https://example.com/image.jpg">
+        <button class="url-btn" id="urlBtn">Detect</button>
+      </div>
+    </div>
+    <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/gif">
+  </div>
+</section>
+
+<!-- Processing -->
+<section class="processing" id="processing">
+  <div class="container">
+    <div class="processing-ring">
+      <svg viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="44"/><circle class="fill" cx="50" cy="50" r="44"/></svg>
+    </div>
+    <div class="processing-label">Analyzing image...</div>
+    <div class="processing-sub">Running detection across multiple engines</div>
+    <div class="engines-status">
+      <div class="engine-pill active"><span class="pill-dot"></span> Neural Vision</div>
+      <div class="engine-pill"><span class="pill-dot"></span> Pixel Forensics</div>
+      <div class="engine-pill"><span class="pill-dot"></span> Texture AI</div>
+      <div class="engine-pill"><span class="pill-dot"></span> Metadata Scan</div>
+    </div>
+  </div>
+</section>
+
+<!-- Results -->
+<section class="results" id="results">
+  <div class="container">
+    <div class="result-header">
+      <div class="result-image-wrap">
+        <img id="resultImage" src="" alt="Uploaded image">
+        <div class="result-image-overlay"></div>
+      </div>
+      <div class="score-card">
+        <div class="score-verdict">
+          <div class="verdict-icon ai" id="verdictIcon">
+            <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="verdict-text">
+            <h3 id="verdictTitle">Likely AI-Generated</h3>
+            <p id="verdictDesc">High confidence based on multi-engine analysis</p>
+          </div>
+        </div>
+        <div class="score-gauge">
+          <div class="gauge-ring">
+            <svg viewBox="0 0 100 100">
+              <circle class="track" cx="50" cy="50" r="42"/>
+              <circle class="value ai" id="gaugeCircle" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/>
+            </svg>
+            <div class="gauge-score" id="gaugeScore">0</div>
+          </div>
+          <div class="gauge-meta">
+            <div class="label">AI Probability</div>
+            <div class="desc" id="gaugeDesc">Multiple engines detected strong indicators of AI generation in texture patterns and noise distribution.</div>
+          </div>
+        </div>
+        <div class="engine-results" id="engineResults"></div>
+      </div>
+    </div>
+
+    <!-- Heatmap -->
+    <div class="heatmap-section">
+      <div class="section-label">Detection Heatmap</div>
+      <div class="heatmap-container">
+        <img id="heatmapImage" src="" alt="Heatmap">
+        <div class="heatmap-overlay"></div>
+      </div>
+      <div class="heatmap-legend">
+        <div class="legend-item"><div class="legend-dot ai"></div> High AI probability</div>
+        <div class="legend-item"><div class="legend-dot uncertain"></div> Moderate</div>
+        <div class="legend-item"><div class="legend-dot real"></div> Likely authentic</div>
+      </div>
+    </div>
+
+    <div style="text-align:center">
+      <button class="new-check" id="newCheckBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Check Another Image
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="features-header">
+      <h2>Why AI Image Checker?</h2>
+      <p>Built for accuracy and transparency, not just another single-engine detector.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div>
+        <h3>Multi-Engine Analysis</h3>
+        <p>Four independent detection engines run simultaneously, cross-referencing results for higher accuracy than any single tool.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+        <h3>Visual Heatmap</h3>
+        <p>See exactly which regions of the image are suspected AI-generated with an intuitive color-coded overlay.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>Privacy First</h3>
+        <p>Images are analyzed and immediately deleted. No storage, no tracking, no accounts required.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+        <h3>Instant Results</h3>
+        <p>Get comprehensive detection results in under 3 seconds. No waiting, no loading screens.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
+        <h3>URL Detection</h3>
+        <p>Paste any image URL directly — no need to download first. Works with social media image links.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div>
+        <h3>Free Forever</h3>
+        <p>Core detection features are completely free. No hidden fees, no credit card, no surprise paywalls.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-copy">&copy; 2026 AI Image Checker. Built for transparency.</div>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">API Docs</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Upload Zone ──
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const urlInput = document.getElementById('urlInput');
+const urlBtn = document.getElementById('urlBtn');
+const uploadSection = document.getElementById('uploadSection');
+const processing = document.getElementById('processing');
+const results = document.getElementById('results');
+const newCheckBtn = document.getElementById('newCheckBtn');
+
+// Drag & Drop
+uploadZone.addEventListener('click', e => { if(e.target.closest('.url-input-wrap')) return; fileInput.click(); });
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) handleFile(file);
+});
+fileInput.addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
+
+// URL
+urlBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const url = urlInput.value.trim();
+  if(url) handleUrl(url);
+});
+urlInput.addEventListener('click', e => e.stopPropagation());
+
+// Handle File
+function handleFile(file) {
+  if(file.size > 20 * 1024 * 1024) { alert('File too large. Max 20MB.'); return; }
+  const reader = new FileReader();
+  reader.onload = e => startAnalysis(e.target.result);
+  reader.readAsDataURL(file);
+}
+
+function handleUrl(url) {
+  startAnalysis(url);
+}
+
+// ── Simulate Analysis ──
+function startAnalysis(imageSrc) {
+  uploadSection.style.display = 'none';
+  processing.classList.add('active');
+  results.classList.remove('active');
+
+  // Animate engine pills
+  const pills = processing.querySelectorAll('.engine-pill');
+  pills.forEach(p => { p.classList.remove('done','active'); });
+  let i = 0;
+  const pillInterval = setInterval(() => {
+    if(i > 0) pills[i-1].classList.remove('active'), pills[i-1].classList.add('done');
+    if(i < pills.length) { pills[i].classList.add('active'); i++; }
+    else { clearInterval(pillInterval); setTimeout(() => showResults(imageSrc), 600); }
+  }, 700);
+}
+
+function showResults(imageSrc) {
+  processing.classList.remove('active');
+  results.classList.add('active');
+
+  // Set images
+  document.getElementById('resultImage').src = imageSrc;
+  document.getElementById('heatmapImage').src = imageSrc;
+
+  // Random demo scores
+  const engines = [
+    { name: 'Neural Vision', weight: 35 },
+    { name: 'Pixel Forensics', weight: 25 },
+    { name: 'Texture AI', weight: 20 },
+    { name: 'Metadata Scan', weight: 20 }
+  ];
+  const scores = engines.map(e => ({ ...e, score: Math.floor(Math.random()*60 + 40) }));
+  const composite = Math.round(scores.reduce((s,e) => s + e.score * e.weight, 0) / 100);
+
+  // Update verdict
+  const verdictIcon = document.getElementById('verdictIcon');
+  const verdictTitle = document.getElementById('verdictTitle');
+  const verdictDesc = document.getElementById('verdictDesc');
+  verdictIcon.className = 'verdict-icon';
+
+  if(composite >= 70) {
+    verdictIcon.classList.add('ai');
+    verdictIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+    verdictTitle.textContent = 'Likely AI-Generated';
+    verdictDesc.textContent = 'High confidence based on multi-engine analysis';
+  } else if(composite >= 40) {
+    verdictIcon.classList.add('uncertain');
+    verdictIcon.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+    verdictTitle.textContent = 'Uncertain';
+    verdictDesc.textContent = 'Mixed signals from detection engines';
+  } else {
+    verdictIcon.classList.add('real');
+    verdictIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+    verdictTitle.textContent = 'Likely Authentic';
+    verdictDesc.textContent = 'Low probability of AI generation';
+  }
+
+  // Animate gauge
+  const gaugeCircle = document.getElementById('gaugeCircle');
+  const gaugeScore = document.getElementById('gaugeScore');
+  gaugeCircle.className = 'value';
+  if(composite >= 70) gaugeCircle.classList.add('ai');
+  else if(composite >= 40) gaugeCircle.classList.add('uncertain');
+  else gaugeCircle.classList.add('real');
+  const circumference = 2 * Math.PI * 42;
+  gaugeCircle.style.strokeDasharray = circumference;
+  gaugeCircle.style.strokeDashoffset = circumference;
+  setTimeout(() => { gaugeCircle.style.strokeDashoffset = circumference - (composite / 100) * circumference; }, 100);
+
+  // Animate score counter
+  let current = 0;
+  const counter = setInterval(() => {
+    current += 1;
+    gaugeScore.textContent = current;
+    if(current >= composite) clearInterval(counter);
+  }, 20);
+
+  // Engine bars
+  const engineResults = document.getElementById('engineResults');
+  engineResults.innerHTML = '';
+  scores.forEach((e, idx) => {
+    const cls = e.score >= 70 ? 'ai' : e.score >= 40 ? 'uncertain' : 'real';
+    const row = document.createElement('div');
+    row.className = 'engine-row';
+    row.innerHTML = `
+      <div class="engine-name">${e.name}</div>
+      <div class="engine-bar-wrap"><div class="engine-bar ${cls}" style="width:0%"></div></div>
+      <div class="engine-score ${cls}">${e.score}%</div>
+    `;
+    engineResults.appendChild(row);
+    setTimeout(() => { row.querySelector('.engine-bar').style.width = e.score + '%'; }, 200 + idx * 150);
+  });
+
+  // Update gauge description
+  const gaugeDesc = document.getElementById('gaugeDesc');
+  if(composite >= 70) gaugeDesc.textContent = 'Multiple engines detected strong indicators of AI generation in texture patterns and noise distribution.';
+  else if(composite >= 40) gaugeDesc.textContent = 'Engines returned mixed results. The image shows some characteristics of both AI generation and authentic capture.';
+  else gaugeDesc.textContent = 'Engines found strong indicators of authentic capture including natural noise patterns and consistent metadata.';
+
+  // Scroll to results
+  results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// New Check
+newCheckBtn.addEventListener('click', () => {
+  results.classList.remove('active');
+  uploadSection.style.display = 'block';
+  fileInput.value = '';
+  urlInput.value = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+</body>
+</html>

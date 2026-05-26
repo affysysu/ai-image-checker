@@ -39,8 +39,11 @@ git push origin main
 echo "Linking Vercel project..."
 vercel link --yes --non-interactive --project "$VERCEL_PROJECT_NAME"
 
-echo "Deploying to Vercel production..."
-vercel deploy --prod --yes --logs --project "$VERCEL_PROJECT_NAME"
+echo "Building Vercel output locally..."
+vercel build --prod --yes --project "$VERCEL_PROJECT_NAME"
+
+echo "Deploying prebuilt output to Vercel production..."
+vercel deploy --prebuilt --prod --yes --project "$VERCEL_PROJECT_NAME"
 
 echo "Deployment complete."
 echo "Source repository: ${SOURCE_REPO_URL}"

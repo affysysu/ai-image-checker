@@ -16,23 +16,36 @@ npm run deploy -- "msg"  # full pipeline: test → commit → push → deploy
 
 ## Architecture
 
-- `app/api/check/` — file upload detection endpoint
-- `app/api/check-url/` — URL-based detection endpoint
+- `app/api/check/` — file upload detection endpoint (reads image bytes)
+- `app/api/check-url/` — URL-based detection endpoint (downloads + analyzes remote images)
 - `lib/detection/service.ts` — orchestrates engines, returns `DetectionResult`
-- `lib/detection/mock-engines.ts` — mock engine adapters (replace with real adapters later)
-- `lib/detection/scoring.ts` — composite score calculation
+- `lib/detection/huggingface.ts` — real HF Inference adapter (`Ateeqq/ai-vs-human-image-detector`)
+- `lib/detection/mock-engines.ts` — mock engines for `texture_ai`, `sightengine`, `metadata`
+- `lib/detection/scoring.ts` — weighted composite score + confidence calculation
 - `components/detector/DetectorShell.tsx` — main detection UI (upload, results, history)
+- `components/MobileNav.tsx` — hamburger menu for <860px screens
+- `components/JsonLd.tsx` — JSON-LD structured data renderer
 - `components/ads/AdSlot.tsx` — returns `null` when `NEXT_PUBLIC_ADS_ENABLED != "true"`
-- `components/SeoToolPage.tsx` — reusable SEO landing page layout
+- `components/SeoToolPage.tsx` — reusable SEO landing page layout with breadcrumbs + footer
 
 ## Conventions
 
-- Static export via `output: "export"` in next.config.mjs. No server runtime on Vercel except API routes (Node 20.x).
+- Standard Next.js deployment (no `output: "export"`). API routes run on Node 20.x runtime.
 - Pages use server components by default; interactive components are client components (`"use client"`).
-- Detection engines are pluggable: implement `EngineAdapter` interface in `lib/detection/`, register in `service.ts`.
+- Detection engines are pluggable: implement the adapter pattern in `lib/detection/`, register in `service.ts`.
+- `self_model` engine uses real Hugging Face inference; falls back to mock if `HUGGINGFACE_API_KEY` is missing.
 - Ad slots are opt-in: component returns `null` unless `NEXT_PUBLIC_ADS_ENABLED === "true"`.
 - Heatmap placeholder only renders when `result.heatmap.available === true`.
 - Do not expose internal implementation details (mock adapters, roadmap notes) in user-facing page copy.
+
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_SITE_URL` | No | Canonical site URL (default: Vercel preview URL) |
+| `HUGGINGFACE_API_KEY` | No | HF token for real AI detection. Without it, `self_model` falls back to mock. |
+| `NEXT_PUBLIC_ADS_ENABLED` | No | Set `"true"` to enable ad slot placeholders |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | No | Google Search Console verification code |
 
 ## SEO Pages
 

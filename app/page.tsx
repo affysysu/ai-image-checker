@@ -1,6 +1,8 @@
 import { AdSlot } from '@/components/ads/AdSlot';
 import { DetectorShell } from '@/components/detector/DetectorShell';
 import { MobileNav } from '@/components/MobileNav';
+import { UserMenu } from '@/components/UserMenu';
+import { getCurrentUser } from '@/lib/auth/session';
 import { faqJsonLd, softwareApplicationJsonLd } from '@/lib/seo/jsonld';
 
 const features = [
@@ -39,7 +41,8 @@ const faqs = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const user = await getCurrentUser();
   return (
     <>
       <script
@@ -59,7 +62,8 @@ export default function HomePage() {
           <a href="#detector">Detector</a>
           <a href="#features">Features</a>
           <a href="#faq">FAQ</a>
-          <a href="/ai-image-checker">Tools</a>
+          <a href="/pricing">Pricing</a>
+          {user ? <UserMenu user={user} /> : <a href="/sign-in" className="header-sign-in">Sign In</a>}
         </nav>
         <MobileNav
           links={[

@@ -36,9 +36,14 @@ app/                  # Next.js App Router pages & API routes
 components/
   ads/AdSlot.tsx       # Ad placeholder (disabled when NEXT_PUBLIC_ADS_ENABLED != "true")
   detector/            # Detection UI (DetectorShell, upload, results)
-  SeoToolPage.tsx      # Reusable SEO tool page layout
+  MobileNav.tsx        # Hamburger menu for mobile (<860px)
+  JsonLd.tsx           # JSON-LD structured data renderer
+  SeoToolPage.tsx      # Reusable SEO tool page with breadcrumbs + footer
 lib/
   detection/           # Detection engines, scoring, service layer
+    huggingface.ts     # Real HF Inference adapter (Ateeqq model)
+    mock-engines.ts    # Mock engines for unsold integrations
+    service.ts         # Engine orchestrator with fallback logic
   seo/                 # JSON-LD, metadata helpers
 scripts/
   deploy.sh            # Full pipeline: test → commit → push → deploy
@@ -51,13 +56,14 @@ docs/                  # Product & technical documentation
 | Variable | Description | Default |
 |---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | Canonical site URL | `https://ai-image-checker.vercel.app` |
+| `HUGGINGFACE_API_KEY` | Hugging Face token for real AI detection (free tier) | — (mock fallback) |
 | `NEXT_PUBLIC_ADS_ENABLED` | Enable ad slots (`"true"`) | disabled |
 | `NEXT_PUBLIC_ADSENSE_CLIENT_ID` | Google AdSense client ID | — |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Google Search Console verification | — |
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 (App Router, static export)
+- **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
 - **Styling**: CSS (globals.css)
 - **Testing**: Vitest

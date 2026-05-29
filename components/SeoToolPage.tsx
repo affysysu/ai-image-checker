@@ -1,7 +1,9 @@
 import { AdSlot } from './ads/AdSlot';
 import { DetectorShell } from './detector/DetectorShell';
 import { MobileNav } from './MobileNav';
+import { UserMenu } from './UserMenu';
 import { JsonLd } from './JsonLd';
+import { getCurrentUser } from '@/lib/auth/session';
 import { buildWebPageJsonLd, buildBreadcrumbJsonLd } from '@/lib/seo/jsonld';
 
 type SeoToolPageProps = {
@@ -22,7 +24,8 @@ const toolPages = [
   { label: 'Free Checker', href: '/check' },
 ];
 
-export function SeoToolPage({ eyebrow, title, description, path, sections }: SeoToolPageProps) {
+export async function SeoToolPage({ eyebrow, title, description, path, sections }: SeoToolPageProps) {
+  const user = await getCurrentUser();
   const breadcrumbItems = [
     { name: 'Home', url: '/' },
     { name: title, url: path },
@@ -44,6 +47,8 @@ export function SeoToolPage({ eyebrow, title, description, path, sections }: Seo
           <a href="/">Home</a>
           <a href="#detector">Detector</a>
           <a href="#guide">Guide</a>
+          <a href="/pricing">Pricing</a>
+          {user ? <UserMenu user={user} /> : <a href="/sign-in" className="header-sign-in">Sign In</a>}
         </nav>
         <MobileNav
           links={[
@@ -96,6 +101,7 @@ export function SeoToolPage({ eyebrow, title, description, path, sections }: Seo
               {p.label}
             </a>
           ))}
+          <a href="/pricing">Pricing</a>
         </nav>
       </footer>
     </>

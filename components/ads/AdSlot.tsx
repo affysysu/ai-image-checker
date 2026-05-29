@@ -8,12 +8,7 @@ export function AdSlot({ id, label, minHeight = 250 }: AdSlotProps) {
   const enabled = process.env.NEXT_PUBLIC_ADS_ENABLED === 'true';
 
   if (!enabled) {
-    return (
-      <aside className="ad-slot ad-slot-muted" style={{ minHeight }} aria-label={label}>
-        <span>Ad slot</span>
-        <small>{id}</small>
-      </aside>
-    );
+    return null;
   }
 
   return (

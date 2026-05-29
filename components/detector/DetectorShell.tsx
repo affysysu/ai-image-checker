@@ -196,9 +196,11 @@ export function DetectorShell() {
         <section className="result-layout" aria-label="Detection result">
           <div className="image-preview">
             {previewUrl ? <img src={previewUrl} alt="Analyzed upload preview" /> : null}
-            <div className="heatmap-placeholder">
-              <span>{result.heatmap.message}</span>
-            </div>
+            {result.heatmap.available ? (
+              <div className="heatmap-placeholder">
+                <span>{result.heatmap.message}</span>
+              </div>
+            ) : null}
           </div>
           <div className={`score-card tone-${result.summary.verdict}`}>
             <p className="eyebrow">AI probability</p>

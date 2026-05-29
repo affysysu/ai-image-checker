@@ -28,8 +28,8 @@ export default function AiImageCheckerPage() {
           body: 'Mixed signals are labelled uncertain instead of being forced into a binary answer.',
         },
         {
-          title: 'Next phase',
-          body: 'A self-hosted model can add real heatmap explanations once the model service is available.',
+          title: 'How it works',
+          body: 'Each engine analyses the image independently and returns a probability score; the composite score reflects overall agreement.',
         },
       ]}
     />

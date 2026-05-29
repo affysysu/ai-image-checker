@@ -1,49 +1,36 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ "${1:-}" = "--" ]; then
-  shift
-fi
+# Full pipeline: test → commit → push → deploy to Vercel production.
+# Usage: npm run deploy -- "commit message"
+
+if [ "${1:-}" = "--" ]; then shift; fi
 
 COMMIT_MESSAGE="${1:-}"
-SOURCE_REPO_URL="https://github.com/affysysu/ai-image-checker"
-VERCEL_PROJECT_NAME="ai-image-checker"
-
 if [ -z "$COMMIT_MESSAGE" ]; then
-  echo "Usage: npm run deploy -- \"Describe your change\""
+  echo "Usage: npm run deploy -- \"commit message\""
   exit 1
 fi
 
-if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  echo "This script must be run inside the ai-image-checker Git repository."
-  exit 1
-fi
-
-echo "Running verification..."
+echo "▶ Running tests..."
 npm test
+
+echo "▶ Building locally..."
 npm run build
 
-echo "Staging changes..."
+echo "▶ Staging & committing..."
 git add .
-
 if git diff --cached --quiet; then
-  echo "No file changes detected. Creating an empty deployment trigger commit."
   git commit --allow-empty -m "$COMMIT_MESSAGE"
 else
   git commit -m "$COMMIT_MESSAGE"
 fi
 
-echo "Pushing source repository..."
+echo "▶ Pushing to origin/main..."
 git push origin main
 
-echo "Linking Vercel project..."
-vercel link --yes --non-interactive --project "$VERCEL_PROJECT_NAME"
+echo "▶ Deploying to Vercel..."
+bash scripts/vercel-deploy.sh
 
-echo "Building Vercel output locally..."
-vercel build --prod --yes --project "$VERCEL_PROJECT_NAME"
-
-echo "Deploying prebuilt output to Vercel production..."
-vercel deploy --prebuilt --prod --yes --project "$VERCEL_PROJECT_NAME"
-
-echo "Deployment complete."
-echo "Source repository: ${SOURCE_REPO_URL}"
+echo ""
+echo "✓ Done. https://ai-image-checker.vercel.app"

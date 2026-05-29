@@ -21,13 +21,18 @@ export function DetectorShell() {
     setHistory(loadStoredHistory(window.localStorage));
   }, []);
 
+  const engineNames = useMemo(() => {
+    if (result) return result.engines.map((e) => e.displayName);
+    // Show analyzing pills based on what we expect
+    return ['Neural Vision'];
+  }, [result]);
+
   const engineState = useMemo(() => {
     if (status !== 'analyzing') {
-      return ['queued', 'queued', 'queued', 'queued'];
+      return engineNames.map(() => 'queued');
     }
-
-    return ['done', 'active', 'queued', 'queued'];
-  }, [status]);
+    return engineNames.map((_, i) => (i === 0 ? 'active' : 'queued'));
+  }, [status, engineNames]);
 
   async function analyzeFile(file: File) {
     setError(null);
@@ -174,10 +179,10 @@ export function DetectorShell() {
           <div className="processing-ring" />
           <div>
             <strong>Analyzing image...</strong>
-            <p>Running multi-engine checks with timeout-safe aggregation.</p>
+            <p>Running AI detection with the Neural Vision model.</p>
           </div>
           <div className="engine-pills">
-            {['Neural Vision', 'Texture AI', 'Pixel Forensics', 'Metadata Scan'].map((engine, index) => (
+            {engineNames.map((engine, index) => (
               <span className={engineState[index]} key={engine}>
                 {engine}
               </span>

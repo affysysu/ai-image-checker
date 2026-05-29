@@ -4,30 +4,25 @@ import { runHuggingFaceEngine } from './huggingface';
 import type { DetectionResult, DetectionSource, EngineResult } from './types';
 
 export async function analyzeImage(source: DetectionSource): Promise<DetectionResult> {
-  const [hfResult, mockResults] = await Promise.all([
-    runHuggingFaceEngine(source),
-    runMockEngines(source),
-  ]);
+  const hfResult = await runHuggingFaceEngine(source);
 
-  // Replace the mock self_model with the real HF result.
-  // If HF failed, fall back to the mock self_model.
-  const engines: EngineResult[] = [
-    hfResult.status === 'success' ? hfResult : runSingleMockEngine(source),
-    ...mockResults.filter((e) => e.engine !== 'self_model'),
-  ];
+  let engines: EngineResult[];
+  let warnings: string[];
+
+  if (hfResult.status === 'success') {
+    // Real engine succeeded — use only real results, no mock noise
+    engines = [hfResult];
+    warnings = [];
+  } else {
+    // Real engine unavailable — fall back to all mock engines
+    const mockResults = await runMockEngines(source);
+    engines = mockResults;
+    warnings = [
+      'Detection is using simulated engines. Real model detection requires a Hugging Face API key.',
+    ];
+  }
 
   const summary = calculateComposite(engines);
-  const failedEngines = engines.filter((engine) => engine.status !== 'success');
-  const warnings = failedEngines.map(
-    (engine) => `${engine.displayName} did not return a usable result.`,
-  );
-
-  // Add a warning if HF fell back to mock
-  if (hfResult.status !== 'success') {
-    warnings.unshift(
-      'Neural Vision is using simulated results. Real model detection requires a Hugging Face API key.',
-    );
-  }
 
   return {
     id: `det_${crypto.randomUUID()}`,

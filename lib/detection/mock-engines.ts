@@ -39,6 +39,23 @@ export async function runMockEngines(source: DetectionSource): Promise<EngineRes
   );
 }
 
+export function runSingleMockEngine(source: DetectionSource): EngineResult {
+  const seed = source.url ?? source.fileName ?? source.mimeType ?? 'unknown-image';
+  const config = ENGINE_CONFIGS[0]; // self_model config
+  const base = seededScore(seed);
+  const score = clamp(base + config.offset);
+
+  return {
+    engine: config.engine,
+    displayName: config.displayName,
+    score,
+    confidence: score > 75 || score < 25 ? 'high' : score > 60 || score < 40 ? 'medium' : 'low',
+    status: 'success',
+    latencyMs: 0,
+    weight: config.weight,
+  };
+}
+
 function seededScore(input: string): number {
   const lowered = input.toLowerCase();
 

@@ -23,6 +23,7 @@ export type DetectionSource = {
   url?: string;
   mimeType?: string;
   size?: number;
+  imageBuffer?: ArrayBuffer;
 };
 
 export type DetectionSummary = {

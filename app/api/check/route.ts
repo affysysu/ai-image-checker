@@ -26,11 +26,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const imageBuffer = await file.arrayBuffer();
+
     const result = await analyzeImage({
       type: 'upload',
       fileName: file.name,
       mimeType: file.type,
       size: file.size,
+      imageBuffer,
     });
 
     return NextResponse.json(result);

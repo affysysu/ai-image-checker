@@ -28,8 +28,8 @@ export default function CheckPage() {
           body: 'Uploaded images are used for the current analysis request and should not be retained as originals.',
         },
         {
-          title: 'Advertising model',
-          body: 'Reserved ad slots support free usage without placing ads inside the core upload interaction.',
+          title: 'Always free',
+          body: 'Core detection is free with no sign-up required. Image analysis runs on demand and results are not stored after processing.',
         },
       ]}
     />

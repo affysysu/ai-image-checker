@@ -1,8 +1,11 @@
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://aiimagechecker.com';
+
 export function softwareApplicationJsonLd() {
   return {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'AI Image Checker',
+    url: SITE_URL,
     applicationCategory: 'MultimediaApplication',
     operatingSystem: 'Web',
     offers: {
@@ -35,5 +38,59 @@ export function faqJsonLd() {
         },
       },
     ],
+  };
+}
+
+export function buildWebPageJsonLd({
+  title,
+  description,
+  path,
+}: {
+  title: string;
+  description: string;
+  path: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: title,
+    description,
+    url: `${SITE_URL}${path}`,
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'AI Image Checker',
+      url: SITE_URL,
+    },
+  };
+}
+
+export function buildBreadcrumbJsonLd(
+  items: Array<{ name: string; url: string }>,
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: `${SITE_URL}${item.url}`,
+    })),
+  };
+}
+
+export function webSiteJsonLd() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'AI Image Checker',
+    url: SITE_URL,
+    description:
+      'Free multi-engine AI image detection tool. Upload an image to check if it was AI-generated.',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${SITE_URL}/check?q={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
   };
 }

@@ -13,6 +13,7 @@ export default function IsThisAiGeneratedPage() {
       eyebrow="Question-style AI detector"
       title="Is This AI Generated?"
       description="Paste the image, run the check, and treat the result as a transparent review signal."
+      path="/is-this-ai-generated"
       sections={[
         {
           title: 'Fast answer',

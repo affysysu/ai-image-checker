@@ -1,5 +1,6 @@
 import { AdSlot } from '@/components/ads/AdSlot';
 import { DetectorShell } from '@/components/detector/DetectorShell';
+import { MobileNav } from '@/components/MobileNav';
 import { faqJsonLd, softwareApplicationJsonLd } from '@/lib/seo/jsonld';
 
 const features = [
@@ -58,8 +59,18 @@ export default function HomePage() {
           <a href="#detector">Detector</a>
           <a href="#features">Features</a>
           <a href="#faq">FAQ</a>
-          <a href="/ai-image-checker">SEO page</a>
+          <a href="/ai-image-checker">Tools</a>
         </nav>
+        <MobileNav
+          links={[
+            { label: 'Detector', href: '#detector' },
+            { label: 'Features', href: '#features' },
+            { label: 'FAQ', href: '#faq' },
+            { label: 'AI Image Checker', href: '/ai-image-checker' },
+            { label: 'Detect AI Images', href: '/detect-ai-generated-image' },
+            { label: 'Is This AI?', href: '/is-this-ai-generated' },
+          ]}
+        />
       </header>
 
       <main id="top">
@@ -133,7 +144,13 @@ export default function HomePage() {
 
       <footer className="site-footer">
         <span>© 2026 AI Image Checker</span>
-        <span>Privacy-first MVP with AdSense-ready placements.</span>
+        <nav className="footer-links" aria-label="Footer navigation">
+          <a href="/ai-image-checker">AI Image Checker</a>
+          <a href="/ai-image-detector">AI Image Detector</a>
+          <a href="/detect-ai-generated-image">Detect AI Images</a>
+          <a href="/is-this-ai-generated">Is This AI?</a>
+          <a href="/check">Free Checker</a>
+        </nav>
       </footer>
     </>
   );

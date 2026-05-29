@@ -13,6 +13,7 @@ export default function CheckPage() {
       eyebrow="Free browser-based detector"
       title="AI Image Checker"
       description="Upload an image or paste a URL to run a multi-engine AI image check."
+      path="/check"
       sections={[
         {
           title: 'Supported formats',

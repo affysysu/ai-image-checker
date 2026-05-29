@@ -13,6 +13,7 @@ export default function DetectAiGeneratedImagePage() {
       eyebrow="How to detect AI-generated images"
       title="Detect AI Generated Images"
       description="Use the detector first, then review the score, engine spread, and confidence label."
+      path="/detect-ai-generated-image"
       sections={[
         {
           title: 'Step 1: upload',
@@ -20,7 +21,7 @@ export default function DetectAiGeneratedImagePage() {
         },
         {
           title: 'Step 2: compare engines',
-          body: 'The API runs mock adapters now and is structured for real vendor/model adapters later.',
+          body: 'Multiple detection engines score the image independently; wider spread means lower confidence.',
         },
         {
           title: 'Step 3: read confidence',

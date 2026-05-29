@@ -13,6 +13,7 @@ export default function AiImageCheckerPage() {
       eyebrow="AI image checker"
       title="Check Images for AI Generation"
       description="Run a fast AI probability analysis with engine-by-engine transparency."
+      path="/ai-image-checker"
       sections={[
         {
           title: 'Why multi-engine',

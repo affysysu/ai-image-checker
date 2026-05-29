@@ -1,6 +1,13 @@
 import type { MetadataRoute } from 'next';
 
-const routes = ['/', '/check', '/ai-image-checker', '/detect-ai-generated-image', '/is-this-ai-generated'];
+const routes = [
+  '/',
+  '/check',
+  '/ai-image-checker',
+  '/ai-image-detector',
+  '/detect-ai-generated-image',
+  '/is-this-ai-generated',
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';

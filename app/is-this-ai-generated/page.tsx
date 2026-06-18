@@ -1,37 +1,34 @@
 import type { Metadata } from 'next';
 import { SeoToolPage } from '@/components/SeoToolPage';
+import { pageContentMap } from '@/lib/seo/content';
+
+const content = pageContentMap['/is-this-ai-generated'];
 
 export const metadata: Metadata = {
-  title: 'Is This AI Generated? Upload an Image to Check',
-  description: 'Wondering if an image is AI-generated? Upload it for a fast AI probability score.',
+  title: 'Is This AI Generated? — Upload an Image to Check Instantly',
+  description:
+    'Wondering if an image is AI-generated? Upload it for a fast AI probability score with engine-by-engine breakdown and confidence analysis.',
   alternates: { canonical: '/is-this-ai-generated' },
+  openGraph: {
+    title: 'Is This AI Generated? — Upload an Image to Check Instantly',
+    description:
+      'Wondering if an image is AI-generated? Upload it for a fast multi-engine probability score.',
+    url: '/is-this-ai-generated',
+    type: 'website',
+    images: [{ url: '/og?title=Is+This+AI+Generated%3F&description=Upload+and+get+an+instant+probability+score', width: 1200, height: 630 }],
+  },
 };
 
 export default function IsThisAiGeneratedPage() {
   return (
     <SeoToolPage
-      eyebrow="Question-style AI detector"
-      title="Is This AI Generated?"
-      description="Paste the image, run the check, and treat the result as a transparent review signal."
-      path="/is-this-ai-generated"
-      sections={[
-        {
-          title: 'Fast answer',
-          body: 'The result card shows a direct label, score, confidence, and short explanation.',
-        },
-        {
-          title: 'Not a verdict',
-          body: 'AI image detection cannot prove origin with certainty, especially for edited or compressed images.',
-        },
-        {
-          title: 'Useful for social images',
-          body: 'URL detection supports quick checks for public image links without downloading first.',
-        },
-        {
-          title: 'Local history',
-          body: 'Recent checks are stored locally in the browser so users can compare results.',
-        },
-      ]}
+      eyebrow={content.eyebrow}
+      title={content.title}
+      description={content.description}
+      path={content.path}
+      contentSections={content.contentSections}
+      crossLinks={content.crossLinks}
+      faqs={content.faqs}
     />
   );
 }

@@ -1,8 +1,15 @@
 import { ImageResponse } from 'next/og';
+import { type NextRequest } from 'next/server';
 
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const title = searchParams.get('title') ?? 'AI Image Checker';
+  const description =
+    searchParams.get('description') ??
+    'Multi-engine AI image detection with visual explanation and privacy-first processing';
+
   return new ImageResponse(
     (
       <div
@@ -47,7 +54,7 @@ export async function GET() {
               lineHeight: 1.1,
             }}
           >
-            AI Image Checker
+            {title}
           </span>
           <span
             style={{
@@ -57,20 +64,10 @@ export async function GET() {
               color: '#9aa8c2',
               marginTop: 16,
               lineHeight: 1.4,
+              maxWidth: 900,
             }}
           >
-            Multi-engine AI image detection with visual explanation
-          </span>
-          <span
-            style={{
-              fontFamily: 'system-ui',
-              fontWeight: 400,
-              fontSize: 24,
-              color: '#9aa8c2',
-              lineHeight: 1.4,
-            }}
-          >
-            and privacy-first processing
+            {description}
           </span>
         </div>
 

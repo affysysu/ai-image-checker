@@ -1,8 +1,23 @@
 import type { Metadata, Viewport } from 'next';
+import { DM_Sans, IBM_Plex_Mono } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { JsonLd } from '@/components/JsonLd';
 import { webSiteJsonLd } from '@/lib/seo/jsonld';
 import './globals.css';
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+  weight: ['400', '500', '600', '700'],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-mono',
+  weight: ['400', '500', '600', '700'],
+});
 
 export const viewport: Viewport = {
   themeColor: '#090d16',
@@ -22,7 +37,10 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   icons: {
-    icon: '/favicon.svg',
+    icon: [
+      { url: '/favicon.svg', rel: 'svg+xml' },
+      { url: '/icon', sizes: '32x32', type: 'image/png' },
+    ],
     apple: '/apple-icon',
   },
   verification: {
@@ -55,7 +73,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${dmSans.variable} ${ibmPlexMono.variable}`}>
       <head>
         <JsonLd data={webSiteJsonLd()} />
       </head>

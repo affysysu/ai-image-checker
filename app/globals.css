@@ -1161,3 +1161,204 @@ h1 span {
     margin-right: auto;
   }
 }
+
+/* ── 404 Not Found ──────────────────────────────── */
+
+.not-found-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.not-found-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 1.5rem;
+}
+
+.not-found-content h1 {
+  font-size: clamp(3rem, 8vw, 5rem);
+  margin: 0.5rem 0;
+}
+
+.not-found-sub {
+  color: var(--text-secondary);
+  font-size: 1.15rem;
+  max-width: 36rem;
+  line-height: 1.6;
+  margin: 0 0 2rem;
+}
+
+.not-found-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.not-found-btn {
+  padding: 0.85rem 1.6rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: opacity 150ms ease;
+}
+
+.not-found-btn.primary {
+  background: var(--cyan);
+  color: var(--bg-deep);
+}
+
+.not-found-btn.secondary {
+  background: transparent;
+  color: var(--cyan);
+  border: 1px solid rgba(0, 229, 255, 0.32);
+}
+
+.not-found-btn:hover {
+  opacity: 0.9;
+}
+
+.not-found-hint {
+  margin-top: 2.5rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.not-found-hint a {
+  color: var(--cyan-dim);
+}
+
+/* ── SEO rich content ─────────────────────────────── */
+
+.seo-rich-content {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.seo-content-section {
+  margin-bottom: 2.5rem;
+}
+
+.seo-content-section h2 {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.seo-content-section h3 {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  margin-bottom: 0.6rem;
+  color: var(--text-primary);
+}
+
+.seo-content-section p {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  font-size: 0.98rem;
+  margin-bottom: 0;
+}
+
+/* ── Cross-links pills ────────────────────────────── */
+
+.seo-crosslinks-band {
+  padding-top: 0;
+}
+
+.seo-crosslinks-title {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.seo-crosslinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.seo-crosslink-pill {
+  display: inline-block;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
+}
+
+.seo-crosslink-pill:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(0, 229, 255, 0.06);
+}
+
+/* ── SEO FAQ accordion ─────────────────────────────── */
+
+.seo-faq-band {
+  padding-top: 0;
+}
+
+.seo-faq-band h2 {
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  margin-bottom: 1.5rem;
+}
+
+.seo-faq-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.seo-faq-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.seo-faq-item summary {
+  padding: 1.1rem 0;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.98rem;
+  color: var(--text-primary);
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.seo-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.seo-faq-item summary::after {
+  content: '+';
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  transition: transform 200ms ease;
+  flex-shrink: 0;
+}
+
+.seo-faq-item[open] summary::after {
+  content: '\2212';
+}
+
+.seo-faq-item p {
+  margin: 0 0 1.1rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  padding-right: 2rem;
+}

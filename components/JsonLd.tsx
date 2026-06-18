@@ -1,14 +1,20 @@
 type JsonLdProps = {
-  data: Record<string, unknown>;
+  data: Record<string, unknown> | Record<string, unknown>[];
 };
 
 export function JsonLd({ data }: JsonLdProps) {
+  const items = Array.isArray(data) ? data : [data];
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify(data).replace(/</g, '\\u003c'),
-      }}
-    />
+    <>
+      {items.map((item, index) => (
+        <script
+          key={index}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(item).replace(/</g, '\\u003c'),
+          }}
+        />
+      ))}
+    </>
   );
 }

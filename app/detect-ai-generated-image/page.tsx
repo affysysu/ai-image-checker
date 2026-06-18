@@ -1,37 +1,34 @@
 import type { Metadata } from 'next';
 import { SeoToolPage } from '@/components/SeoToolPage';
+import { pageContentMap } from '@/lib/seo/content';
+
+const content = pageContentMap['/detect-ai-generated-image'];
 
 export const metadata: Metadata = {
-  title: 'Detect AI Generated Images Online - Free Image Analysis Tool',
-  description: 'Learn how to detect AI-generated images and upload a picture for instant multi-engine analysis.',
+  title: 'Detect AI Generated Images Online — Free Image Analysis Tool',
+  description:
+    'Learn how to detect AI-generated images step by step and upload a picture for instant multi-engine analysis with confidence scoring.',
   alternates: { canonical: '/detect-ai-generated-image' },
+  openGraph: {
+    title: 'Detect AI Generated Images Online — Free Image Analysis Tool',
+    description:
+      'Learn how to detect AI-generated images and get instant multi-engine analysis.',
+    url: '/detect-ai-generated-image',
+    type: 'website',
+    images: [{ url: '/og?title=Detect+AI+Generated+Images&description=Step-by-step+detection+with+four+engines', width: 1200, height: 630 }],
+  },
 };
 
 export default function DetectAiGeneratedImagePage() {
   return (
     <SeoToolPage
-      eyebrow="How to detect AI-generated images"
-      title="Detect AI Generated Images"
-      description="Use the detector first, then review the score, engine spread, and confidence label."
-      path="/detect-ai-generated-image"
-      sections={[
-        {
-          title: 'Step 1: upload',
-          body: 'Choose a supported image file or paste a public HTTPS image URL.',
-        },
-        {
-          title: 'Step 2: compare engines',
-          body: 'Multiple detection engines score the image independently; wider spread means lower confidence.',
-        },
-        {
-          title: 'Step 3: read confidence',
-          body: 'High spread between engines lowers confidence and should trigger manual review.',
-        },
-        {
-          title: 'Step 4: avoid overclaiming',
-          body: 'AI detection results are probabilistic and should not be used as the only evidence.',
-        },
-      ]}
+      eyebrow={content.eyebrow}
+      title={content.title}
+      description={content.description}
+      path={content.path}
+      contentSections={content.contentSections}
+      crossLinks={content.crossLinks}
+      faqs={content.faqs}
     />
   );
 }

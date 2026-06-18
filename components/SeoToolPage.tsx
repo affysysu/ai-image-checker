@@ -4,17 +4,36 @@ import { MobileNav } from './MobileNav';
 import { UserMenu } from './UserMenu';
 import { JsonLd } from './JsonLd';
 import { getCurrentUser } from '@/lib/auth/session';
-import { buildWebPageJsonLd, buildBreadcrumbJsonLd } from '@/lib/seo/jsonld';
+import {
+  buildWebPageJsonLd,
+  buildBreadcrumbJsonLd,
+  buildFaqPageJsonLd,
+} from '@/lib/seo/jsonld';
+
+export interface ContentSection {
+  heading: string;
+  content: string;
+  headingLevel?: 2 | 3;
+}
+
+export interface CrossLink {
+  label: string;
+  href: string;
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
 
 type SeoToolPageProps = {
   eyebrow: string;
   title: string;
   description: string;
   path: string;
-  sections: Array<{
-    title: string;
-    body: string;
-  }>;
+  contentSections: ContentSection[];
+  crossLinks: CrossLink[];
+  faqs: FaqItem[];
 };
 
 const toolPages = [
@@ -24,7 +43,15 @@ const toolPages = [
   { label: 'Free Checker', href: '/check' },
 ];
 
-export async function SeoToolPage({ eyebrow, title, description, path, sections }: SeoToolPageProps) {
+export async function SeoToolPage({
+  eyebrow,
+  title,
+  description,
+  path,
+  contentSections,
+  crossLinks,
+  faqs,
+}: SeoToolPageProps) {
   const user = await getCurrentUser();
   const breadcrumbItems = [
     { name: 'Home', url: '/' },
@@ -33,8 +60,13 @@ export async function SeoToolPage({ eyebrow, title, description, path, sections 
 
   return (
     <>
-      <JsonLd data={buildWebPageJsonLd({ title, description, path })} />
-      <JsonLd data={buildBreadcrumbJsonLd(breadcrumbItems)} />
+      <JsonLd
+        data={[
+          buildWebPageJsonLd({ title, description, path, includeSoftwareApp: true }),
+          buildBreadcrumbJsonLd(breadcrumbItems),
+          buildFaqPageJsonLd(faqs),
+        ]}
+      />
 
       <header className="site-header">
         <a className="brand" href="/">
@@ -47,8 +79,15 @@ export async function SeoToolPage({ eyebrow, title, description, path, sections 
           <a href="/">Home</a>
           <a href="#detector">Detector</a>
           <a href="#guide">Guide</a>
+          <a href="#faq">FAQ</a>
           <a href="/pricing">Pricing</a>
-          {user ? <UserMenu user={user} /> : <a href="/sign-in" className="header-sign-in">Sign In</a>}
+          {user ? (
+            <UserMenu user={user} />
+          ) : (
+            <a href="/sign-in" className="header-sign-in">
+              Sign In
+            </a>
+          )}
         </nav>
         <MobileNav
           links={[
@@ -65,7 +104,9 @@ export async function SeoToolPage({ eyebrow, title, description, path, sections 
           <div className="hero-copy">
             <nav className="breadcrumb" aria-label="Breadcrumb">
               <a href="/">Home</a>
-              <span className="breadcrumb-sep" aria-hidden="true">/</span>
+              <span className="breadcrumb-sep" aria-hidden="true">
+                /
+              </span>
               <span aria-current="page">{title}</span>
             </nav>
             <p className="eyebrow">{eyebrow}</p>
@@ -78,17 +119,53 @@ export async function SeoToolPage({ eyebrow, title, description, path, sections 
 
         <section id="detector" className="detector-section">
           <DetectorShell />
-          <AdSlot id="tool_mid_content" label="Ad placement reserved for SEO tool page" minHeight={120} />
+          <AdSlot
+            id="tool_mid_content"
+            label="Ad placement reserved for SEO tool page"
+            minHeight={120}
+          />
         </section>
 
         <section id="guide" className="content-band">
-          <div className="feature-grid">
-            {sections.map((section) => (
-              <article className="feature-card" key={section.title}>
-                <h2>{section.title}</h2>
-                <p>{section.body}</p>
-              </article>
-            ))}
+          <div className="seo-rich-content">
+            {contentSections.map((section) => {
+              const Tag = section.headingLevel === 3 ? 'h3' : 'h2';
+              return (
+                <article className="seo-content-section" key={section.heading}>
+                  <Tag>{section.heading}</Tag>
+                  <p>{section.content}</p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        {crossLinks.length > 0 && (
+          <section className="content-band seo-crosslinks-band">
+            <div className="seo-rich-content">
+              <h2 className="seo-crosslinks-title">Explore related tools</h2>
+              <div className="seo-crosslinks">
+                {crossLinks.map((link) => (
+                  <a key={link.href} href={link.href} className="seo-crosslink-pill">
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section id="faq" className="content-band seo-faq-band">
+          <div className="seo-rich-content">
+            <h2>Frequently Asked Questions</h2>
+            <div className="seo-faq-list">
+              {faqs.map((item) => (
+                <details key={item.question} className="seo-faq-item">
+                  <summary>{item.question}</summary>
+                  <p>{item.answer}</p>
+                </details>
+              ))}
+            </div>
           </div>
         </section>
       </main>

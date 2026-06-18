@@ -1,19 +1,20 @@
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://aiimagechecker.com';
 
+const BASE_SOFTWARE_APP = {
+  '@type': 'SoftwareApplication',
+  name: 'AI Image Checker',
+  url: SITE_URL,
+  applicationCategory: 'MultimediaApplication',
+  operatingSystem: 'Web',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+  },
+};
+
 export function softwareApplicationJsonLd() {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
-    name: 'AI Image Checker',
-    url: SITE_URL,
-    applicationCategory: 'MultimediaApplication',
-    operatingSystem: 'Web',
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'USD',
-    },
-  };
+  return BASE_SOFTWARE_APP;
 }
 
 export function faqJsonLd() {
@@ -45,12 +46,14 @@ export function buildWebPageJsonLd({
   title,
   description,
   path,
+  includeSoftwareApp = false,
 }: {
   title: string;
   description: string;
   path: string;
+  includeSoftwareApp?: boolean;
 }) {
-  return {
+  const webPage: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: title,
@@ -62,6 +65,12 @@ export function buildWebPageJsonLd({
       url: SITE_URL,
     },
   };
+
+  if (includeSoftwareApp) {
+    webPage.about = BASE_SOFTWARE_APP;
+  }
+
+  return webPage;
 }
 
 export function buildBreadcrumbJsonLd(
@@ -75,6 +84,23 @@ export function buildBreadcrumbJsonLd(
       position: index + 1,
       name: item.name,
       item: `${SITE_URL}${item.url}`,
+    })),
+  };
+}
+
+export function buildFaqPageJsonLd(
+  questions: Array<{ question: string; answer: string }>,
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: questions.map(({ question, answer }) => ({
+      '@type': 'Question',
+      name: question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: answer,
+      },
     })),
   };
 }
